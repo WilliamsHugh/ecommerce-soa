@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: ecommerce-user-service
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./user-service/Dockerfile
+    dockerContext: ./user-service
+    healthCheckPath: /ready
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CORS_ORIGIN
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: MYSQL_HOST
+        sync: false
+      - key: MYSQL_PORT
+        sync: false
+      - key: MYSQL_DATABASE
+        sync: false
+      - key: MYSQL_USER
+        sync: false
+      - key: MYSQL_PASSWORD
+        sync: false
+      - key: MYSQL_SSL_CA_BASE64
+        sync: false
+      - key: REDIS_URL
+        sync: false

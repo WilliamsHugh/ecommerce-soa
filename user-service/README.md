@@ -104,8 +104,11 @@ Docker context của `user-service`, chạy migration trước khi start và ki�
 Trước lần deploy đầu tiên, điền các biến được Render đánh dấu yêu cầu nhập:
 
 - `CORS_ORIGIN`: URL frontend/API gateway được phép gọi service; nhiều URL cách nhau bằng dấu phẩy.
-- `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`: thông tin MySQL
-  managed bên ngoài Render (hoặc MySQL server có thể truy cập từ Render).
+- `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`: thông tin trong
+  **Aiven Console > MySQL service > Overview > Connection information**.
+- `MYSQL_SSL_CA_BASE64`: tải CA certificate từ trang Overview của Aiven rồi chuyển thành base64
+  một dòng bằng `base64 < ca.pem | tr -d '\n'`. Service sẽ xác minh chứng chỉ TLS khi biến này
+  được thiết lập.
 - `REDIS_URL`: connection string Redis, ví dụ `rediss://default:password@host:6379`.
 
 `JWT_ACCESS_SECRET` và `JWT_REFRESH_SECRET` được Blueprint sinh độc lập. Không đặt

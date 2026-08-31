@@ -3,6 +3,10 @@ const number = (value, fallback) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+const mysqlSslCa = process.env.MYSQL_SSL_CA_BASE64
+  ? Buffer.from(process.env.MYSQL_SSL_CA_BASE64, "base64").toString("utf8")
+  : process.env.MYSQL_SSL_CA;
+
 export const env = {
   nodeEnv: process.env.NODE_ENV || "development",
   port: number(process.env.PORT, 3001),
@@ -27,6 +31,9 @@ export const env = {
     user: process.env.MYSQL_USER || "ecommerce_user",
     password: process.env.MYSQL_PASSWORD || "",
     connectionLimit: number(process.env.MYSQL_CONNECTION_LIMIT, 10),
+    ...(mysqlSslCa
+      ? { ssl: { ca: mysqlSslCa, rejectUnauthorized: true } }
+      : {}),
   },
   redisUrl: process.env.REDIS_URL || "redis://127.0.0.1:6379",
   redisKeyPrefix: process.env.REDIS_KEY_PREFIX || "ecommerce:user-service:",
