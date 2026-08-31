@@ -6,8 +6,10 @@ export const openapi = {
     description: "Authentication, profile management and RBAC.",
   },
   servers: [
-    { url: "http://localhost:3001" },
-    { url: "http://localhost:3000", description: "API Gateway" },
+    {
+      url: "/",
+      description: "Current user-service origin (local or deployed)",
+    },
   ],
   tags: [{ name: "Auth" }, { name: "Users" }, { name: "Administration" }],
   paths: {
