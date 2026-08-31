@@ -93,3 +93,25 @@ Lệnh coverage áp ngưỡng line coverage tối thiểu 80%.
 Trong môi trường development/test, endpoint quên mật khẩu trả `reset_token` để thử bằng Swagger.
 Trong production token không được trả về; lớp gửi email/notification cần nhận token qua event hoặc
 adapter hạ tầng của môi trường triển khai.
+
+## Deploy lên Render bằng Docker
+
+Repository có sẵn `user-service/Dockerfile` và Blueprint `render.yaml`. Trên Render, chọn
+**New > Blueprint**, kết nối repository và deploy Blueprint ở thư mục gốc. Render tự build đúng
+Docker context của `user-service`, chạy migration trước khi start và kiểm tra readiness tại
+`/ready`. Không cần tự khai báo `PORT`; Render cấp biến này lúc chạy.
+
+Trước lần deploy đầu tiên, điền các biến được Render đánh dấu yêu cầu nhập:
+
+- `CORS_ORIGIN`: URL frontend/API gateway được phép gọi service; nhiều URL cách nhau bằng dấu phẩy.
+- `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`: thông tin MySQL
+  managed bên ngoài Render (hoặc MySQL server có thể truy cập từ Render).
+- `REDIS_URL`: connection string Redis, ví dụ `rediss://default:password@host:6379`.
+
+`JWT_ACCESS_SECRET` và `JWT_REFRESH_SECRET` được Blueprint sinh độc lập. Không đặt
+`USER_STORE_DRIVER=memory` trên production. Có thể kiểm tra image ở local từ thư mục gốc:
+
+```bash
+docker build -f user-service/Dockerfile -t ecommerce-user-service ./user-service
+docker run --rm -p 3001:3001 --env-file user-service/.env ecommerce-user-service
+```
