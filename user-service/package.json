@@ -1,12 +1,16 @@
 {
   "name": "user-service",
   "version": "1.0.0",
-  "description": "",
+  "description": "User management, authentication and RBAC service",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "USER_STORE_DRIVER=memory JWT_ACCESS_SECRET=test-access-secret JWT_REFRESH_SECRET=test-refresh-secret node --test",
+    "test:coverage": "USER_STORE_DRIVER=memory JWT_ACCESS_SECRET=test-access-secret JWT_REFRESH_SECRET=test-refresh-secret node --experimental-test-coverage --test-coverage-lines=80 --test",
+    "test:integration": "RUN_INTEGRATION=true INTEGRATION_BASE_URL=${INTEGRATION_BASE_URL:-http://127.0.0.1:3001} node --test test/user-service.integration.test.js",
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+    "dev": "node --watch src/server.js",
+    "db:migrate": "node scripts/migrate.js",
+    "db:seed": "node scripts/seed.js"
   },
   "keywords": [],
   "author": "",
@@ -16,15 +20,13 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.3",
-    "uuid": "^14.0.2"
+    "mysql2": "^3.24.2",
+    "redis": "^6.2.1",
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^14.0.2",
+    "zod": "^4.5.4"
   },
-  "type": "module",
-  "script": {
-    "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
-  },
-  "cripts": {
-    "dev": "nod --watch src/server.js"
-  }
+  "type": "module"
 }
