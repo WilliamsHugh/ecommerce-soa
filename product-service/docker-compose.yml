@@ -7,9 +7,9 @@ services:
     environment:
       PORT: 3002
       NODE_ENV: ${NODE_ENV:-development}
-      PRODUCT_STORE_DRIVER: elasticsearch
-      ELASTICSEARCH_URL: http://elasticsearch:9200
-      ELASTICSEARCH_INDEX: products
+      PRODUCT_STORE_DRIVER: mongodb
+      MONGODB_URI: mongodb://mongodb:27017/product_service?replicaSet=rs0
+      MONGODB_DATABASE: product_service
       S3_ENDPOINT: ${S3_ENDPOINT:-http://localhost:9000}
       S3_HEALTH_URL: http://minio:9000/minio/health/live
       S3_PUBLIC_URL: ${S3_PUBLIC_URL:-http://localhost:9000}
@@ -21,7 +21,7 @@ services:
       JWT_AUDIENCE: ${JWT_AUDIENCE:-ecommerce-api}
     ports: ["3002:3002"]
     depends_on:
-      elasticsearch: { condition: service_healthy }
+      mongodb: { condition: service_healthy }
       minio: { condition: service_healthy }
     healthcheck:
       test:
@@ -35,17 +35,18 @@ services:
       timeout: 3s
       retries: 20
 
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
-    environment:
-      discovery.type: single-node
-      xpack.security.enabled: "false"
-      ES_JAVA_OPTS: -Xms512m -Xmx512m
-    ports: ["9200:9200"]
-    volumes: [product-es-data:/usr/share/elasticsearch/data]
+  mongodb:
+    image: mongo:8.0
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    ports: ["27017:27017"]
+    volumes: [product-mongo-data:/data/db]
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:9200/_cluster/health || exit 1"]
-      interval: 10s
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --quiet --eval 'try { rs.status().ok } catch (e) { rs.initiate({_id: \"rs0\", members: [{_id: 0, host: \"mongodb:27017\"}]}).ok }' | grep 1",
+        ]
+      interval: 5s
       timeout: 5s
       retries: 30
 
@@ -78,5 +79,5 @@ services:
       S3_BUCKET: ${S3_BUCKET:-product-images}
 
 volumes:
-  product-es-data:
+  product-mongo-data:
   product-minio-data:

@@ -2,7 +2,7 @@
 
 Product Service sở hữu catalog, tìm kiếm/lọc sản phẩm và tồn kho reservation. Service tách
 repository khỏi HTTP layer: memory driver dùng cho test nhanh, còn
-`PRODUCT_STORE_DRIVER=elasticsearch` dùng Elasticsearch làm catalog bền vững. Ảnh được upload
+`PRODUCT_STORE_DRIVER=mongodb` dùng MongoDB Atlas làm catalog và reservation bền vững. Ảnh được upload
 trực tiếp lên S3/MinIO bằng URL đã ký, không đưa credential storage vào client.
 
 ## Chạy
@@ -15,15 +15,15 @@ npm install
 npm start
 ```
 
-Container stack với Elasticsearch và MinIO:
+Container stack local với MongoDB replica set và MinIO:
 
 ```bash
 cp .env.example .env
 docker compose up --build
 ```
 
-Standalone compose exposes Product Service `3002`, Elasticsearch `9200`, và MinIO API/console
-`9000/9001`. Stack tự tạo bucket `product-images` và chạy service với Elasticsearch driver.
+Standalone compose exposes Product Service `3002`, MongoDB `27017`, và MinIO API/console
+`9000/9001`. Stack tự tạo bucket `product-images` và chạy service với MongoDB driver.
 
 Service chạy cổng `3002`. Mọi request client nên đi qua API Gateway (`3000`); gọi trực tiếp `3002`
 chỉ dành cho service-to-service hoặc kiểm thử.
@@ -60,27 +60,26 @@ thước. Client upload trực tiếp lên S3/MinIO; cần cấu hình `S3_ENDPO
 ## Health và Swagger
 
 - Liveness: `GET /health`
-- Readiness: `GET /ready` (kiểm tra Elasticsearch nếu dùng driver đó và S3/MinIO nếu cấu hình)
+- Readiness: `GET /ready` (kiểm tra MongoDB nếu dùng driver đó và S3/MinIO nếu cấu hình)
 - Swagger UI: `http://localhost:3002/api-docs`
 - OpenAPI JSON: `http://localhost:3002/api-docs.json`
 
-## Deploy Render với Bonsai
+## Deploy Render với MongoDB Atlas
 
-Tạo một Bonsai Sandbox cluster miễn phí, sau đó sao chép toàn bộ cluster URL dạng
-`https://username:password@host` vào `ELASTICSEARCH_URL`. Product Service tự tách credential khỏi
-URL và gửi bằng HTTP Basic Auth; không commit URL thật vào Git.
+Tạo MongoDB Atlas M0 cluster, database user và Network Access cho Render, sau đó sao chép connection
+string của Node.js driver vào `MONGODB_URI`. Không commit URI thật vào Git.
 
 Repository root có Blueprint `render.yaml` để Render build `product-service/Dockerfile`. Khi tạo
-hoặc đồng bộ Blueprint, nhập `CORS_ORIGIN`, `JWT_ACCESS_SECRET` và `ELASTICSEARCH_URL`.
+hoặc đồng bộ Blueprint, nhập `CORS_ORIGIN`, `JWT_ACCESS_SECRET` và `MONGODB_URI`.
 `JWT_ACCESS_SECRET` phải giống chính xác giá trị của User Service. Render tự cấp `PORT`.
 
 Các biến production bắt buộc:
 
 ```env
 NODE_ENV=production
-PRODUCT_STORE_DRIVER=elasticsearch
-ELASTICSEARCH_URL=https://username:password@host
-ELASTICSEARCH_INDEX=products
+PRODUCT_STORE_DRIVER=mongodb
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/product_service
+MONGODB_DATABASE=product_service
 JWT_ACCESS_SECRET=the-same-secret-as-user-service
 CORS_ORIGIN=https://your-frontend.example.com
 ```
