@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import jwt from "jsonwebtoken";
 import app from "../src/app.js";
+import { applyPayment, canAccess, changeStatus } from "../src/services/order.service.js";
 
 const secret = "development-secret-change-me";
 const auth = jwt.sign({ sub: "buyer-1", roles: ["BUYER"] }, secret, {
@@ -33,4 +34,25 @@ test("exposes health and protects order routes", async () => {
     body: JSON.stringify({ items: [] }),
   });
   assert.equal(invalid.status, 400);
+});
+
+test("enforces ownership and order state transitions", async () => {
+  const order = {
+    id: "order-1",
+    user_id: "buyer-1",
+    status: "PENDING",
+    total: 100,
+    currency: "VND",
+    items: [],
+    shipping_address: "Hanoi",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+  assert.equal(canAccess({ sub: "buyer-1", roles: ["BUYER"] }, order), true);
+  assert.equal(canAccess({ sub: "other", roles: ["BUYER"] }, order), false);
+  await changeStatus(order, "CONFIRMED", `Bearer ${auth}`);
+  assert.equal(order.status, "CONFIRMED");
+  await assert.rejects(changeStatus(order, "DELIVERED", `Bearer ${auth}`), /Invalid transition/);
+  applyPayment(order, "pay-1");
+  assert.equal(order.payment_id, undefined);
 });

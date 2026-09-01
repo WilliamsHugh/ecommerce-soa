@@ -17,6 +17,9 @@ async function ensureSchema() {
   )`);
   await initialized;
   await pool.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS idempotency_key VARCHAR(255)");
+  await pool.query(
+    "CREATE UNIQUE INDEX IF NOT EXISTS orders_user_idempotency_key ON orders(user_id, idempotency_key) WHERE idempotency_key IS NOT NULL",
+  );
 }
 const fromRow = (row) => ({
   ...row,

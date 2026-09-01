@@ -15,6 +15,8 @@ export const env = {
   paymentServiceUrl: process.env.PAYMENT_SERVICE_URL || "http://127.0.0.1:3004",
   notificationServiceUrl: process.env.NOTIFICATION_SERVICE_URL || "http://127.0.0.1:3005",
   dependencyTimeoutMs: Number(process.env.DEPENDENCY_TIMEOUT_MS || 5000),
+  dependencyRetries: Number(process.env.DEPENDENCY_RETRIES || 2),
+  internalServiceSecret: process.env.INTERNAL_SERVICE_SECRET || "",
 };
 
 export function assertProductionConfig() {

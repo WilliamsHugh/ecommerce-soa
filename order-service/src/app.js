@@ -4,6 +4,7 @@ import { openapi } from "./config/swagger.js";
 import { paymentSuccess } from "./controllers/order.controller.js";
 import orderRoutes from "./routes/order.routes.js";
 import { orderStore } from "./stores/order.store.js";
+import { authenticateInternal } from "./middlewares/internal.middleware.js";
 
 const app = express();
 app.use(express.json());
@@ -19,5 +20,5 @@ app.get("/ready", async (_req, res) => {
   }
 });
 app.use("/api/v1/orders", orderRoutes);
-app.post("/api/v1/internal/orders/:id/payment-success", paymentSuccess);
+app.post("/api/v1/internal/orders/:id/payment-success", authenticateInternal, paymentSuccess);
 export default app;
