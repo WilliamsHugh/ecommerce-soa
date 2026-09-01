@@ -1,0 +1,44 @@
+services:
+  order-service:
+    build: .
+    environment:
+      PORT: 3003
+      NODE_ENV: production
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-development-secret-change-me}
+      JWT_ISSUER: ${JWT_ISSUER:-ecommerce-user-service}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-ecommerce-api}
+      ORDER_STORE_DRIVER: postgres
+      DATABASE_URL: postgresql://order:order@postgres:5432/orders
+      DATABASE_SSL: "false"
+      PRODUCT_SERVICE_URL: ${PRODUCT_SERVICE_URL:-http://host.docker.internal:3002}
+      PAYMENT_SERVICE_URL: ${PAYMENT_SERVICE_URL:-http://host.docker.internal:3004}
+      NOTIFICATION_SERVICE_URL: ${NOTIFICATION_SERVICE_URL:-http://host.docker.internal:3005}
+    ports: ["3003:3003"]
+    depends_on:
+      postgres: { condition: service_healthy }
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3003/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: orders
+      POSTGRES_USER: order
+      POSTGRES_PASSWORD: order
+    ports: ["5433:5432"]
+    volumes: [order-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U order -d orders"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+volumes:
+  order-data:
