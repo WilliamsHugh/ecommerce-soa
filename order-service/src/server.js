@@ -1,4 +1,5 @@
 import app from "./app.js";
+import { assertProductionConfig, env } from "./config/env.js";
 
-const port = process.env.PORT || 3003;
-app.listen(port, "0.0.0.0", () => console.log(`order-service listening on ${port}`));
+assertProductionConfig();
+app.listen(env.port, "0.0.0.0", () => console.log(`order-service listening on ${env.port}`));

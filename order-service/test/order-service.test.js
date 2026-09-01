@@ -4,7 +4,10 @@ import jwt from "jsonwebtoken";
 import app from "../src/app.js";
 
 const secret = "development-secret-change-me";
-const auth = jwt.sign({ sub: "buyer-1", roles: ["BUYER"] }, secret);
+const auth = jwt.sign({ sub: "buyer-1", roles: ["BUYER"] }, secret, {
+  issuer: "ecommerce-user-service",
+  audience: "ecommerce-api",
+});
 let server;
 let baseUrl;
 
