@@ -12,10 +12,12 @@ export const env = {
   jwtIssuer: process.env.JWT_ISSUER || "ecommerce-user-service",
   jwtAudience: process.env.JWT_AUDIENCE || "ecommerce-api",
   productStoreDriver: process.env.PRODUCT_STORE_DRIVER || "memory",
-  elasticsearchUrl: process.env.ELASTICSEARCH_URL || "http://127.0.0.1:9200",
-  elasticsearchIndex: process.env.ELASTICSEARCH_INDEX || "products",
-  elasticsearchUsername: process.env.ELASTICSEARCH_USERNAME || "",
-  elasticsearchPassword: process.env.ELASTICSEARCH_PASSWORD || "",
+  mongodbUri: process.env.MONGODB_URI || "mongodb://127.0.0.1:27017",
+  mongodbDatabase: process.env.MONGODB_DATABASE || "product_service",
+  mongodbProductsCollection: process.env.MONGODB_PRODUCTS_COLLECTION || "products",
+  mongodbReservationsCollection:
+    process.env.MONGODB_RESERVATIONS_COLLECTION || "reservations",
+  mongodbConnectionTimeoutMs: number(process.env.MONGODB_CONNECTION_TIMEOUT_MS, 30_000),
   s3Endpoint: process.env.S3_ENDPOINT || "",
   s3HealthUrl: process.env.S3_HEALTH_URL || process.env.S3_ENDPOINT || "",
   s3Bucket: process.env.S3_BUCKET || "product-images",
@@ -29,6 +31,7 @@ export function assertProductionConfig() {
   if (env.nodeEnv !== "production") return;
   if (env.accessSecret.includes("development"))
     throw new Error("JWT_ACCESS_SECRET must be configured in production");
-  if (env.productStoreDriver !== "elasticsearch")
-    throw new Error("PRODUCT_STORE_DRIVER must be elasticsearch in production");
+  if (env.productStoreDriver !== "mongodb")
+    throw new Error("PRODUCT_STORE_DRIVER must be mongodb in production");
+  if (!process.env.MONGODB_URI) throw new Error("MONGODB_URI must be configured in production");
 }

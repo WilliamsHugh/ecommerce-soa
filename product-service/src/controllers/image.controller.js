@@ -15,7 +15,9 @@ export async function presignImage(req, res, next) {
     if (size > env.maxImageBytes)
       return res.status(413).json({ error: "Image exceeds maximum size" });
     const key = `products/${product.id}/${randomUUID()}-${filename.replace(/[^a-zA-Z0-9_.-]/g, "_")}`;
-    const publicUrl = `${(env.s3PublicUrl || env.s3Endpoint).replace(/\/$/, "")}/${env.s3Bucket}/${key}`;
+    const publicUrl = env.s3PublicUrl
+      ? `${env.s3PublicUrl.replace(/\/$/, "")}/${key}`
+      : `${env.s3Endpoint.replace(/\/$/, "")}/${env.s3Bucket}/${key}`;
     const uploadUrl = await createImageUploadUrl({ key, contentType, expiresIn: 900 });
     if (!uploadUrl)
       return res.status(503).json({ error: "Image storage credentials are not configured" });

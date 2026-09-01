@@ -84,7 +84,9 @@ JWT_ACCESS_SECRET=the-same-secret-as-user-service
 CORS_ORIGIN=https://your-frontend.example.com
 ```
 
-S3-compatible storage là tùy chọn; để trống toàn bộ biến `S3_*` nếu chưa triển khai upload ảnh.
+Cloudflare R2 dùng `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY` và `S3_SECRET_KEY` để tạo presigned
+upload URL. `S3_PUBLIC_URL` là URL `r2.dev` hoặc custom domain trỏ thẳng tới bucket, vì vậy không
+thêm tên bucket vào cuối biến này. Bucket cần CORS cho `PUT`, `GET`, `HEAD` từ origin frontend.
 Swagger dùng cùng origin nên truy cập được tại `https://<render-domain>/api-docs`.
 
 ## Kiểm thử

@@ -1,10 +1,10 @@
 import { env } from "../config/env.js";
-import { elasticsearchStore } from "./elasticsearch.store.js";
+import { mongodbProductStore, mongodbReservationStore } from "./mongodb.store.js";
 
 const products = new Map();
 const reservations = new Map();
 let inventoryQueue = Promise.resolve();
-const persistent = env.productStoreDriver === "elasticsearch" ? elasticsearchStore : null;
+const persistent = env.productStoreDriver === "mongodb" ? mongodbProductStore : null;
 const lock = (operation) => {
   const next = inventoryQueue.then(operation, operation);
   inventoryQueue = next.catch(() => {});
@@ -76,9 +76,22 @@ export const productStore = {
 };
 
 export const reservationStore = {
-  find: (id) => reservations.get(id),
-  save(reservation) {
+  find: (id) => (persistent ? mongodbReservationStore.find(id) : reservations.get(id)),
+  async reserve(reservation) {
+    if (persistent) return mongodbReservationStore.reserve(reservation);
+    const items = await productStore.reserve(reservation.items);
+    if (!items) return null;
+    reservation.items = items;
     reservations.set(reservation.id, reservation);
+    return reservation;
+  },
+  async release(id) {
+    if (persistent) return mongodbReservationStore.release(id);
+    const reservation = reservations.get(id);
+    if (!reservation || reservation.status !== "RESERVED") return null;
+    await productStore.release(reservation.items);
+    reservation.status = "RELEASED";
+    reservation.released_at = new Date().toISOString();
     return reservation;
   },
 };

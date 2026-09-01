@@ -1,13 +1,8 @@
 import { env } from "../config/env.js";
-import { elasticsearchBaseUrl, elasticsearchHeaders } from "../config/elasticsearch.js";
+import { checkMongo } from "../config/mongodb.js";
 
 export async function checkCatalogStore() {
-  if (env.productStoreDriver !== "elasticsearch") return true;
-  const response = await fetch(`${elasticsearchBaseUrl}/_cluster/health`, {
-    headers: elasticsearchHeaders,
-    signal: AbortSignal.timeout(2000),
-  });
-  return response.ok;
+  return env.productStoreDriver === "mongodb" ? checkMongo() : true;
 }
 
 export async function checkImageStore() {
