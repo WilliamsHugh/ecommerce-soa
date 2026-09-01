@@ -56,7 +56,8 @@ container database.
 | GET    | `/api/v1/users/audit-logs`     | ADMIN                  |
 | DELETE | `/api/v1/users/:id`            | ADMIN                  |
 
-Swagger UI: `http://localhost:3001/api-docs`; OpenAPI JSON: `/api-docs.json`.
+Swagger UI: `/api-docs`; OpenAPI JSON: `/api-docs.json`. Swagger dùng cùng origin với trang hiện
+tại, nên hoạt động trên cả `http://localhost:3001` và domain HTTPS khi deploy.
 
 ## Database
 
