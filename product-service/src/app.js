@@ -24,9 +24,10 @@ app.get("/health", (_req, res) => res.json({ service: "product-service", status:
 app.get("/ready", async (_req, res) => {
   try {
     const [catalog, images] = await Promise.all([checkCatalogStore(), checkImageStore()]);
-    res.json({
+    const ready = catalog && images;
+    res.status(ready ? 200 : 503).json({
       service: "product-service",
-      status: "ready",
+      status: ready ? "ready" : "not-ready",
       catalog: catalog ? "up" : "down",
       images: images ? "up" : "down",
     });

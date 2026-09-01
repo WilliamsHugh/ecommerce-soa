@@ -1,4 +1,4 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { HeadBucketCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "../config/env.js";
 
@@ -19,4 +19,10 @@ export async function createImageUploadUrl({ key, contentType, expiresIn = 900 }
     new PutObjectCommand({ Bucket: env.s3Bucket, Key: key, ContentType: contentType }),
     { expiresIn },
   );
+}
+
+export async function checkImageStorage() {
+  if (!client) return !env.s3Endpoint && !env.s3PublicUrl;
+  await client.send(new HeadBucketCommand({ Bucket: env.s3Bucket }));
+  return true;
 }
