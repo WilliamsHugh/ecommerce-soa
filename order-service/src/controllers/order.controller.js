@@ -1,5 +1,10 @@
 import { orderStore } from "../stores/order.store.js";
-import { applyPayment, canAccess, changeStatus, createOrder } from "../services/order.service.js";
+import {
+  applyPayment,
+  canAccess,
+  changeStatus,
+  createOrder,
+} from "../services/order.service.js";
 
 export async function create(req, res) {
   const items = req.body.items;
@@ -7,12 +12,17 @@ export async function create(req, res) {
     !Array.isArray(items) ||
     !items.length ||
     items.some(
-      (item) => !item.product_id || !Number.isInteger(item.quantity) || !(item.quantity > 0),
+      (item) =>
+        !item.product_id ||
+        !Number.isInteger(item.quantity) ||
+        !(item.quantity > 0),
     ) ||
     typeof req.body.shipping_address !== "string" ||
     req.body.shipping_address.trim().length < 5
   )
-    return res.status(400).json({ error: "items and a valid shipping_address are required" });
+    return res
+      .status(400)
+      .json({ error: "items and a valid shipping_address are required" });
   try {
     const order = await createOrder({
       items,
@@ -23,7 +33,9 @@ export async function create(req, res) {
     });
     res.status(201).json({ data: order });
   } catch (error) {
-    res.status(error.status || 502).json({ error: error.message, details: error.details });
+    res
+      .status(error.status || 502)
+      .json({ error: error.message, details: error.details });
   }
 }
 export async function list(req, res) {

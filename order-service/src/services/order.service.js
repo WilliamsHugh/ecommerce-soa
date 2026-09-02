@@ -19,7 +19,13 @@ const transitions = {
 export const canAccess = (auth, order) =>
   order.user_id === auth.sub || auth.roles.includes("ADMIN");
 
-export async function createOrder({ items, shippingAddress, auth, token, idempotencyKey }) {
+export async function createOrder({
+  items,
+  shippingAddress,
+  auth,
+  token,
+  idempotencyKey,
+}) {
   if (idempotencyKey) {
     const existing = await orderStore.byIdempotency(idempotencyKey, auth.sub);
     if (existing) return existing;
@@ -43,7 +49,10 @@ export async function createOrder({ items, shippingAddress, auth, token, idempot
       unit_price: product.price,
       subtotal: product.price * quantity,
     })),
-    total: details.reduce((sum, { product, quantity }) => sum + product.price * quantity, 0),
+    total: details.reduce(
+      (sum, { product, quantity }) => sum + product.price * quantity,
+      0,
+    ),
     currency: details[0].product.currency,
     status: "PENDING",
     reservation_id: reservation.id,
@@ -59,9 +68,12 @@ export async function createOrder({ items, shippingAddress, auth, token, idempot
 
 export async function changeStatus(order, target, token) {
   if (!transitions[order.status].includes(target))
-    throw Object.assign(new Error(`Invalid transition ${order.status} -> ${target}`), {
-      status: 409,
-    });
+    throw Object.assign(
+      new Error(`Invalid transition ${order.status} -> ${target}`),
+      {
+        status: 409,
+      },
+    );
   order.status = target;
   order.updated_at = new Date().toISOString();
   if (target === "CANCELLED") releaseStock(order.reservation_id, token);

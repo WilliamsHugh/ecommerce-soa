@@ -7,6 +7,8 @@ export function authenticateInternal(req, res, next) {
   const expected = Buffer.from(env.internalServiceSecret);
   const actual = Buffer.from(String(supplied));
   if (actual.length !== expected.length || !timingSafeEqual(actual, expected))
-    return res.status(401).json({ error: "Invalid internal service credentials" });
+    return res
+      .status(401)
+      .json({ error: "Invalid internal service credentials" });
   return next();
 }

@@ -12,7 +12,8 @@ const fetchWithRetry = async (url, options = {}) => {
         ...options,
         signal: AbortSignal.timeout(env.dependencyTimeoutMs),
       });
-      if (response.status < 500 || attempt === env.dependencyRetries) return response;
+      if (response.status < 500 || attempt === env.dependencyRetries)
+        return response;
     } catch (error) {
       lastError = error;
       if (attempt === env.dependencyRetries) throw error;
@@ -25,7 +26,9 @@ const fetchWithRetry = async (url, options = {}) => {
 export async function getProducts(items) {
   return Promise.all(
     items.map(async (item) => {
-      const response = await fetchWithRetry(`${productUrl}/api/v1/products/${item.product_id}`);
+      const response = await fetchWithRetry(
+        `${productUrl}/api/v1/products/${item.product_id}`,
+      );
       if (!response.ok) throw new Error(`Product ${item.product_id} not found`);
       return { ...item, product: (await response.json()).data };
     }),
@@ -39,16 +42,26 @@ export async function reserveStock(items, token) {
   });
 }
 export function releaseStock(reservationId, token) {
-  return fetchWithRetry(`${productUrl}/api/v1/inventory/reservations/${reservationId}/release`, {
-    method: "POST",
-    headers: { authorization: token },
-  }).catch(() => {});
+  return fetchWithRetry(
+    `${productUrl}/api/v1/inventory/reservations/${reservationId}/release`,
+    {
+      method: "POST",
+      headers: { authorization: token },
+    },
+  ).catch(() => {});
 }
 export function initializePayment(order) {
   return fetchWithRetry(`${paymentUrl}/api/v1/payments`, {
     method: "POST",
-    headers: { "content-type": "application/json", "idempotency-key": order.id },
-    body: JSON.stringify({ order_id: order.id, amount: order.total, currency: order.currency }),
+    headers: {
+      "content-type": "application/json",
+      "idempotency-key": order.id,
+    },
+    body: JSON.stringify({
+      order_id: order.id,
+      amount: order.total,
+      currency: order.currency,
+    }),
   }).catch(() => {});
 }
 export function emitEvent(type, data) {

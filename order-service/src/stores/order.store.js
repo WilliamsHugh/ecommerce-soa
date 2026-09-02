@@ -3,9 +3,12 @@ import { postgresOrderStore } from "./postgres.store.js";
 
 const orders = new Map();
 const memoryStore = {
-  all: (userId) => [...orders.values()].filter((order) => !userId || order.user_id === userId),
+  all: (userId) =>
+    [...orders.values()].filter((order) => !userId || order.user_id === userId),
   byIdempotency: (key, userId) =>
-    [...orders.values()].find((order) => order.idempotency_key === key && order.user_id === userId),
+    [...orders.values()].find(
+      (order) => order.idempotency_key === key && order.user_id === userId,
+    ),
   find: (id) => orders.get(id),
   save(order) {
     orders.set(order.id, order);
@@ -15,7 +18,8 @@ const memoryStore = {
 };
 
 export const orderStore = {
-  check: () => (env.orderStoreDriver === "postgres" ? postgresOrderStore.check() : true),
+  check: () =>
+    env.orderStoreDriver === "postgres" ? postgresOrderStore.check() : true,
   all: (...args) =>
     env.orderStoreDriver === "postgres"
       ? postgresOrderStore.all(...args)
@@ -33,5 +37,7 @@ export const orderStore = {
       ? postgresOrderStore.save(...args)
       : memoryStore.save(...args),
   clear: () =>
-    env.orderStoreDriver === "postgres" ? postgresOrderStore.clear() : memoryStore.clear(),
+    env.orderStoreDriver === "postgres"
+      ? postgresOrderStore.clear()
+      : memoryStore.clear(),
 };

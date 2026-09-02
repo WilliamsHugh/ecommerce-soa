@@ -17,7 +17,11 @@ export const openapi = {
         tags: ["Orders"],
         requestBody: {
           required: true,
-          content: { "application/json": { schema: { $ref: "#/components/schemas/OrderInput" } } },
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/OrderInput" },
+            },
+          },
         },
         responses: {
           201: { description: "Order created" },
@@ -28,7 +32,9 @@ export const openapi = {
       get: {
         summary: "List orders of a user",
         tags: ["Orders"],
-        parameters: [{ name: "userId", in: "query", schema: { type: "string" } }],
+        parameters: [
+          { name: "userId", in: "query", schema: { type: "string" } },
+        ],
         responses: { 200: { description: "Orders" } },
       },
     },
@@ -87,7 +93,9 @@ export const openapi = {
               schema: {
                 type: "object",
                 required: ["status"],
-                properties: { status: { $ref: "#/components/schemas/OrderStatus" } },
+                properties: {
+                  status: { $ref: "#/components/schemas/OrderStatus" },
+                },
               },
             },
           },
@@ -107,7 +115,10 @@ export const openapi = {
         requestBody: {
           content: {
             "application/json": {
-              schema: { type: "object", properties: { payment_id: { type: "string" } } },
+              schema: {
+                type: "object",
+                properties: { payment_id: { type: "string" } },
+              },
             },
           },
         },
@@ -116,17 +127,36 @@ export const openapi = {
     },
   },
   components: {
-    securitySchemes: { bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" } },
-    parameters: { Id: { name: "id", in: "path", required: true, schema: { type: "string" } } },
+    securitySchemes: {
+      bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" },
+    },
+    parameters: {
+      Id: {
+        name: "id",
+        in: "path",
+        required: true,
+        schema: { type: "string" },
+      },
+    },
     schemas: {
       OrderStatus: {
         type: "string",
-        enum: ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"],
+        enum: [
+          "PENDING",
+          "CONFIRMED",
+          "PROCESSING",
+          "SHIPPED",
+          "DELIVERED",
+          "CANCELLED",
+        ],
       },
       OrderItemInput: {
         type: "object",
         required: ["product_id", "quantity"],
-        properties: { product_id: { type: "string" }, quantity: { type: "integer", minimum: 1 } },
+        properties: {
+          product_id: { type: "string" },
+          quantity: { type: "integer", minimum: 1 },
+        },
       },
       OrderInput: {
         type: "object",

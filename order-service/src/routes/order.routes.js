@@ -1,5 +1,10 @@
 import { Router } from "express";
-import { create, get, list, updateStatus } from "../controllers/order.controller.js";
+import {
+  create,
+  get,
+  list,
+  updateStatus,
+} from "../controllers/order.controller.js";
 import { authenticate } from "../middlewares/auth.middleware.js";
 
 const router = Router();
