@@ -17,22 +17,52 @@ Service sở hữu tài khoản, authentication, profile và RBAC của hệ th�
 - JWT giới hạn HS256, issuer/audience; login rate limit độc lập tại service.
 - Swagger, liveness `/health` và dependency readiness `/ready`.
 
-## Cấu hình và chạy
+## Yêu cầu
+
+- Node.js 22 và npm để chạy trực tiếp.
+- Docker để chạy container.
+- MySQL 8.x và Redis/Valkey có thể truy cập từ service. Không dùng `localhost` trong container để
+  trỏ tới database chạy ở container khác.
+
+## Chạy trực tiếp bằng Node.js
 
 ```bash
 cd user-service
 cp .env.example .env
-# Điền JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, MYSQL_PASSWORD và ADMIN_PASSWORD
-npm install
+# Điền hai JWT secret, thông tin MySQL, REDIS_URL và ADMIN_PASSWORD.
+# Các hostname Aiven trong file mẫu chỉ là placeholder.
+npm ci
 npm run db:migrate
 npm run db:seed      # tùy chọn, tạo admin đầu tiên
 npm start
 ```
 
-Không commit `.env`. Hai JWT secret phải dài, ngẫu nhiên và khác nhau. Khi chạy toàn hệ thống,
-`docker compose --env-file user-service/.env up --build` tự chờ MySQL/Redis khỏe và chạy
-migration trước khi khởi động service. Tham số `--env-file` truyền cùng credential MySQL cho
-container database.
+Không commit `.env`. Hai JWT secret phải dài, ngẫu nhiên và khác nhau. `db:migrate` có thể chạy lại
+an toàn; `db:seed` chỉ cần khi tạo admin đầu tiên. Service chỉ mở cổng sau khi kết nối được cả MySQL
+và Redis/Valkey.
+
+## Chạy bằng Docker
+
+Từ repository root:
+
+```bash
+docker build -f user-service/Dockerfile -t ecommerce-user-service ./user-service
+docker run --rm --name ecommerce-user-service \
+  -p 3001:3001 \
+  --env-file user-service/.env \
+  ecommerce-user-service
+```
+
+Container tự chạy migration trước khi start. `MYSQL_HOST` và `REDIS_URL` phải trỏ tới dependency
+mà container truy cập được; không dùng `localhost` trừ khi database chạy trong cùng container.
+
+Kiểm tra sau khi start:
+
+```bash
+curl http://localhost:3001/health
+curl http://localhost:3001/ready
+docker logs -f ecommerce-user-service
+```
 
 ## API
 
@@ -112,10 +142,6 @@ Trước lần deploy đầu tiên, điền các biến được Render đánh d
   được thiết lập.
 - `REDIS_URL`: connection string Redis, ví dụ `rediss://default:password@host:6379`.
 
-`JWT_ACCESS_SECRET` và `JWT_REFRESH_SECRET` được Blueprint sinh độc lập. Không đặt
-`USER_STORE_DRIVER=memory` trên production. Có thể kiểm tra image ở local từ thư mục gốc:
-
-```bash
-docker build -f user-service/Dockerfile -t ecommerce-user-service ./user-service
-docker run --rm -p 3001:3001 --env-file user-service/.env ecommerce-user-service
-```
+`JWT_ACCESS_SECRET` và `JWT_REFRESH_SECRET` được Blueprint sinh độc lập. Product/Order/API Gateway
+phải dùng đúng `JWT_ACCESS_SECRET`, `JWT_ISSUER` và `JWT_AUDIENCE` của User Service để xác minh
+access token. Không đặt `USER_STORE_DRIVER=memory` trên production.
