@@ -5,11 +5,12 @@ import notificationRoutes from "./routes/notification.routes.js";
 import { notificationStore } from "./stores/notification.store.js";
 import cors from "cors";
 import helmet from "helmet";
+import { env } from "./config/env.js";
 
 const app = express();
 app.disable("x-powered-by");
 app.use(helmet());
-app.use(cors());
+app.use(cors({ origin: env.corsOrigin.split(",").map((item) => item.trim()) }));
 app.use(express.json());
 app.get("/api-docs.json", (_req, res) => res.json(openapi));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapi));

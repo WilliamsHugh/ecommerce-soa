@@ -15,3 +15,4 @@ export const eventSchema = z.object({
 });
 
 export const recipientSchema = z.string().min(1).max(255);
+export const notificationIdSchema = z.object({ id: z.string().uuid() });

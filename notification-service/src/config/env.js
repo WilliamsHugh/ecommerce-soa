@@ -5,6 +5,7 @@ const bool = (value, fallback = false) =>
 
 export const env = {
   port: Number(process.env.PORT || 3005),
+  corsOrigin: process.env.CORS_ORIGIN || "http://localhost:3000",
   nodeEnv: process.env.NODE_ENV || "development",
   jwtSecret:
     process.env.JWT_ACCESS_SECRET ||
@@ -31,4 +32,6 @@ export function assertProductionConfig() {
     throw new Error(
       "DATABASE_URL is required when NOTIFICATION_STORE_DRIVER=postgres",
     );
+  if (env.nodeEnv === "production" && !env.internalServiceSecret)
+    throw new Error("INTERNAL_SERVICE_SECRET must be configured in production");
 }
