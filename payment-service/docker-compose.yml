@@ -1,0 +1,38 @@
+services:
+  payment-service:
+    build: .
+    ports: ["3004:3004"]
+    environment:
+      NODE_ENV: development
+      PAYMENT_STORE_DRIVER: postgres
+      DATABASE_URL: postgresql://payment:payment@postgres:5432/payment_service
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-local-access-secret-change-me}
+      INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET:-local-internal-secret-change-me}
+      ORDER_SERVICE_URL: ${ORDER_SERVICE_URL:-http://host.docker.internal:3003}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      PAYMENT_GATEWAY_PROVIDER: ${PAYMENT_GATEWAY_PROVIDER:-soap_sandbox}
+      PAYMENT_GATEWAY_API_URL: ${PAYMENT_GATEWAY_API_URL:-}
+      PAYMENT_GATEWAY_API_KEY: ${PAYMENT_GATEWAY_API_KEY:-}
+    depends_on:
+      postgres: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3004/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: payment_service
+      POSTGRES_USER: payment
+      POSTGRES_PASSWORD: payment
+    ports: ["${POSTGRES_PORT:-55434}:5432"]
+    volumes: ["payment-postgres:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U payment -d payment_service"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+volumes:
+  payment-postgres:
